@@ -22,19 +22,43 @@ setTimeout(() => goose.remove(), 200);
 gameArea.appendChild(goose);
             
 // 自动移动
-let pos = 0;
-const speed = 2 + Math.random() * 3;
+let posY = 0;
+
+let velocityY = Math.random() * 5 + 15;
+const speedX = Math.random() * 3;
+const gravity = -1 * (Math.random() * 0.1 + 0.3);
+let posX = Math.random() * window.innerWidth * 0.7;
+// let velocity = -30;
+let horizontalPos = 0;
 const move = setInterval(() => {
-pos += speed;
-goose.style.bottom = pos + 'px';
+//velocity += gravity * -9.8;
+
+//pos += velocity * timeStep;
+
+//horizontalPos += speed;
+posX += speedX;
+goose.style.left = posX + 'px';
+//goose.style.left = horizontalPos + 'px';
+
+//goose.style.bottom = Math.max(0, pos) + 'px';
+velocityY += gravity;
+posY += velocityY;
+//pos += speed;
+goose.style.bottom = posY + 'px';
                 
 // 移出屏幕后删除
-if(pos > window.innerHeight) {
+if (posY <= 0  || posX <= 0 || posX > innerWidth) {
+    clearInterval(move);
+    goose.remove();
+}
+},20);
+}
+/*if(pos > window.innerHeight) {
 clearInterval(move);
 goose.remove();
 }
 }, 20);
-}
+}*/
 
 // 每1秒生成一只大鹅
 setInterval(createGoose, 1000);
