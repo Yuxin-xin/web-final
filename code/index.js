@@ -1,4 +1,10 @@
-let img = document.querySelector('goose')
+let text = document.getElementById('text');
+let btn = document.getElementById('start-btn');
+let green = document.getElementById('green');
+let bigdoose = document.getElementById('bigGoose');
+let header = document.getElementById('header');
+
+let img = document.querySelector('goose');
 
 if (!img) {
     img = document.createElement('div');
@@ -20,6 +26,14 @@ let imgt = 0
 let y = 0
 // 定义一个计数器
 let index = 0
+
+window.addEventListener('scroll', function(){
+    let value = this.window.scrollY;
+
+    text.style.top = 30+value * -0.5 + '%';
+    bigdoose.style.top = 20+value * -0.3 + '%';
+    btn.style.marginTop = value*0.5+'%';
+})
 
 window.addEventListener('mousemove',function(event){
     // 获取网页左侧距离的图片位置
@@ -52,3 +66,5 @@ setInterval(()=>{
     img.style.left = imgl+"px"
     img.style.top = imgt+"px"
 },10)
+
+

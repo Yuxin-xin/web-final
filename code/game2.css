@@ -1,0 +1,98 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+}
+body {
+    background: #ffffff;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+#header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0px 100px 0px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+#header img{
+    padding: 10px;
+}
+#header ul{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#header ul li{
+    list-style: none;
+    margin-left: 20px;
+}
+#header ul li a{
+    text-decoration: none;
+    padding: 6px 15px;
+    color: #003740;
+    font-weight: 500;
+    border-radius: 20px;
+}
+#header ul li a:hover,
+#header ul li a.active{
+    background: #077a8c;
+    color: #ffffff;
+}
+#game-area {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin-top: 65px;
+}
+.backgound{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#bck{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+#green {
+    position: absolute;
+    width: 100%;
+    height: 95%;
+    object-fit: cover;
+    z-index: 2;
+}
+
+.goose {
+    position: absolute;
+    font-size: 60px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s;
+    z-index: 20; /* 确保苹果在最顶层 */
+    pointer-events: auto; /* 确保可以点击 */
+}
+.goose:hover {
+    transform: scale(1.2);
+}
+
+.ui {
+    position: absolute;
+    top: 30px;
+    left: 20px;
+    font-size: 20px;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px 40px;
+    border-radius: 10px;
+    z-index: 10; /* 确保UI在背景之上 */
+}

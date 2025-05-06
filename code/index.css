@@ -1,37 +1,119 @@
+*{
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: Arial, Helvetica, sans-serif;
+}
+
 body{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    background: rgb(255, 255, 255);
-    color:lightskyblue;
-    cursor: none;
+   overflow-x: hidden;
+   background: #ffffff;
+   min-height: 100vh;
 }
 /*导航*/
-nav {
+#header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 0px 100px 0px 20px;
     display: flex;
-    justify-content:flex-start;
+    justify-content: space-between;
     align-items: center;
-    padding: 1px 40px;
-    background-color: rgb(255, 255, 255);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
-
-.nav-links {
-    padding: 0px 10px;
+#header img{
+    padding: 10px;
+}
+#header ul{
     display: flex;
-    gap: 30px;
+    justify-content: center;
+    align-items: center;
 }
-
-.nav-links a {
+#header ul li{
+    list-style: none;
+    margin-left: 20px;
+}
+#header ul li a{
     text-decoration: none;
-    color: #333;
+    padding: 6px 15px;
+    color: #003740;
     font-weight: 500;
+    border-radius: 20px;
+}
+#header ul li a:hover,
+#header ul li a.active{
+    background: #077a8c;
+    color: #ffffff;
 }
 
-/*介绍*/
+section{
+    margin: 65px 0px 0px;
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+section #bck{
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+section #bigGoose {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 80%;
+    width: auto;
+    object-fit: contain;
+    z-index: 2;
+}
+section #green {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+
+}
+section #text{
+    position: absolute;
+    color: #ffffff;
+    font-size: 10vw;
+    text-align: center;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    margin-bottom: 150px;
+    z-index: 2;
+}
+section a{
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    background: rgba(255,255,255,0.6);
+    color: #003740;
+    padding: 10px 50px;
+    border-radius: 100px;
+    z-index: 4;
+    margin-top: 200px;
+    transform: translateY(100px);
+}
+section a:hover{
+    background: rgba(155,207,232,0.7);
+    color: #ffffff;
+}
+
+/*介绍
 .introduce {
     height: 60vh;
-    background-color: #ddd;
+    /*background-color: #ddd;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -46,26 +128,28 @@ nav {
     padding: 10px 50px;
     border-radius: 100px;
     cursor: pointer;
-}
+}*/
 
 .about {
-    padding: 50px;
-    margin-bottom: 40px;
+    position: relative;
+    padding: 100px 50px;
+    background:#077a8c;
 }
 .about h2 {
     font-size: 28px;
     color: #444;
+    margin-bottom: 40px;
 }
-.content-section {
+.about p {
+    font-size: 1em;
     color: #000;
-    padding:50px;
-    margin-bottom: 50px;
 }
 
 .goose {
-    width: 50Px;
+    width: 50px;
     height: 50px;
     position: absolute;
+    z-index: 4;
 }
 .goose img {
     width: 100%;
