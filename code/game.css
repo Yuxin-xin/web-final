@@ -26,12 +26,12 @@ nav {
 }
 
 
-#game-area {
+/*#game-area {
     position: relative;
     width: 100vw;
     height: 100vh;
     background-color: #bddefb;
-}
+}*/
 .goose {
     position: absolute;
     font-size: 60px;

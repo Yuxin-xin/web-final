@@ -85,3 +85,134 @@ setInterval(createGoose, 1000);
 for(let i=0; i<3; i++) {
 setTimeout(createGoose, i * 300);
 }
+
+// Game variables
+
+
+// Initialize camera
+async function setupCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+        videoElement.srcObject = stream;
+        await new Promise((resolve) => {
+            videoElement.onloadedmetadata = () => {
+                videoElement.play();
+                resolve();
+            };
+        });
+    } catch (error) {
+        console.error('Camera error:', error);
+        // Fallback background if camera fails
+        document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    }
+}
+
+// Timer functions
+function startTimer() {
+    updateTimer();
+    
+    const timer = setInterval(() => {
+        if (!gameActive) return;
+        
+        timeLeft--;
+        updateTimer();
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            gameActive = false;
+            alert(`游戏结束! 你抓到了 ${score} 只大鹅!`);
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Goose creation
+function createGoose() {
+    if (!gameActive) return;
+    
+    const goose = document.createElement('div');
+    goose.className = 'goose';
+    goose.innerHTML = '🦢';
+    goose.style.color = `hsl(${Math.random() * 60 + 30}, 100%, 60%)`;
+    
+    // Random starting position at bottom
+    const startX = Math.random() * (window.innerWidth - 60);
+    goose.style.left = `${startX}px`;
+    goose.style.bottom = '0px';
+    
+    // Click handler
+    goose.addEventListener('click', () => {
+        if (!gameActive) return;
+        
+        goose.style.transform = 'scale(1.5) rotate(360deg)';
+        score++;
+        scoreDisplay.textContent = `大鹅: ${score}只`;
+        setTimeout(() => {
+            goose.remove();
+        }, 200);
+    });
+    
+    gameArea.appendChild(goose);
+    
+    // Physics movement
+    let posY = 0;
+    let posX = startX;
+    let velocityY = Math.random() * 3 + 2;
+    const speedX = (Math.random() - 0.5) * 4;
+    const gravity = -0.1;
+    const rotationSpeed = (Math.random() - 0.5) * 20;
+    let rotation = 0;
+    
+    const move = () => {
+        if (!gameActive) {
+            clearInterval(moveInterval);
+            return;
+        }
+        
+        posX += speedX;
+        posY += velocityY;
+        velocityY += gravity;
+        rotation += rotationSpeed;
+        
+        goose.style.left = `${posX}px`;
+        goose.style.bottom = `${posY}px`;
+        goose.style.transform = `rotate(${rotation}deg)`;
+        
+        // Remove when off screen
+        if (posY <= -100 || posX <= -100 || posX > window.innerWidth + 100) {
+            goose.remove();
+            clearInterval(moveInterval);
+        }
+    };
+    
+    const moveInterval = setInterval(move, 20);
+}
+
+// Initialize game
+async function initGame() {
+    await setupCamera();
+    startTimer();
+    
+    // Create geese periodically
+    setInterval(createGoose, 800);
+    
+    // Initial geese
+    for (let i = 0; i < 3; i++) {
+        setTimeout(createGoose, i * 500);
+    }
+}
+
+// Start game when page loads
+window.addEventListener('DOMContentLoaded', initGame);
