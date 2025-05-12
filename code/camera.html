@@ -8,14 +8,17 @@
 </head>
 <body>
     <div class="camera-container">
-        <div class="apple-emoji">🍎</div>
         <video id="video" autoplay playsinline muted></video>
+        <!-- Apples will be dynamically inserted here -->
         <div class="controls">
-            <button id="flip-btn">Flip Camera</button>
-            <button id="fullscreen-btn">Fullscreen</button>
+            <button id="fullscreen-btn">FullScreen</button>
         </div>
         <div id="error-msg" class="error-message"></div>
     </div>
     <script src="camera.js"></script>
+    <!-- 先引入 tfjs-core（本地或 CDN） -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+<!-- 再引入本地 pose-detection 文件 -->
+    <script src="/js/tf-models/pose-detection.js"></script>
 </body>
 </html>

@@ -85,4 +85,8 @@ setInterval(createGoose, 1000);
 for(let i=0; i<3; i++) {
 setTimeout(createGoose, i * 300);
 }
-
+function endGame() {
+    gameActive = false;
+    localStorage.setItem('gooseGameScore', score);
+    window.location.href = 'change2.html'; // 跳转到昵称设置页面
+}

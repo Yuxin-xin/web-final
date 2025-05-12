@@ -17,19 +17,22 @@ body {
     width: 100vw;
     height: 100vh;
     display: flex;
+    z-index: 1;
+    transform: scaleX(-1) translateZ(0); /* 添加 translateZ(0) 强制 GPU 渲染 */
+    will-change: transform;
     justify-content: center;
     align-items: center;
 }
 
 .apple-emoji {
     position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 60px;
-    z-index: 10;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5);
-    animation: float 3s ease-in-out infinite;
+    font-size: 200px;
+    transform: scale(5);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s;
+    z-index: 20; /* 确保苹果在最顶层 */
+    pointer-events: auto; /* 确保可以点击 */
 }
 
 @keyframes float {
@@ -42,7 +45,12 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    z-index: 1;
     transform: scaleX(-1); /* Mirror effect for front camera */
+    pointer-events: none;
+    -webkit-transform: translateZ(0);
+    opacity:0.5;
+    
 }
 
 .controls {
@@ -88,7 +96,7 @@ button:hover {
 
 @media (max-width: 768px) {
     .apple-emoji {
-        font-size: 50px;
+        font-size: 100px;
         top: 20px;
     }
     

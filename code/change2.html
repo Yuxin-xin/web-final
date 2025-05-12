@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置昵称</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .nickname-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            color: #077a8c;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+        }
+        
+        input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            background-color: #077a8c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #055a6a;
+        }
+    </style>
+</head>
+<body>
+    <div class="nickname-container">
+        <h1>游戏结束</h1>
+        <p style="margin-bottom: 20px;">请设置你的昵称</p>
+        
+        <div class="input-group">
+            <input type="text" id="nickname" placeholder="输入昵称(最多10个字符)" maxlength="10">
+        </div>
+        
+        <button id="save-btn">Save</button>
+    </div>
+
+    <script>
+      document.getElementById('save-btn').addEventListener('click', function() {
+    const nickname = document.getElementById('nickname').value.trim();
+    
+    if (nickname) {
+        // 1. 先获取当前分数
+        const score = localStorage.getItem('gooseGameScore') || 0;
+        
+        // 2. 获取现有历史记录
+        let history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
+        
+        // 3. 添加新记录
+        history.push({
+            nickname: nickname,
+            score: score,
+            date: new Date().toLocaleString()
+        });
+        
+        // 4. 截断只保留最近5条
+        if (history.length > 5) history = history.slice(-5);
+        
+        // 5. 同步保存所有数据
+        localStorage.setItem('playerNickname', nickname);
+        localStorage.setItem('gameHistory', JSON.stringify(history));
+        
+        // 6. 添加延迟确保保存完成
+        setTimeout(() => {
+            window.location.href = 'final.html';
+        }, 50); // 50ms延迟确保保存完成
+    } else {
+        alert('请输入有效的昵称');
+    }
+});
+    </script>
+</body>
+</html>
