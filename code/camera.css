@@ -11,6 +11,41 @@ body {
     height: 100vh;
     overflow: hidden;
 }
+#header {
+    position: absolute;
+    background:#ffffff;
+    width:100%;
+    top: 0;
+    left: 0;
+    padding: 0px 100px 0px 20px;
+    display: flex;
+    align-items: center;
+    z-index: 100;
+}
+#header img{
+    padding: 10px;
+}
+#header ul{
+    display:inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+#header ul li{
+    list-style: none;
+    margin-left: 20px;
+}
+#header ul li a{
+    text-decoration: none;
+    padding: 6px 15px;
+    color: #003740;
+    font-weight: 500;
+    border-radius: 20px;
+}
+#header ul li a:hover,
+#header ul li a.active{
+    background: #077a8c;
+    color: #ffffff;
+}
 
 .camera-container {
     position: relative;
@@ -48,36 +83,8 @@ body {
     z-index: 1;
     transform: scaleX(-1); /* Mirror effect for front camera */
     pointer-events: none;
-    -webkit-transform: translateZ(0);
     opacity:0.5;
     
-}
-
-.controls {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 20px;
-    z-index: 10;
-}
-
-button {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
 }
 
 .error-message {

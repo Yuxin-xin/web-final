@@ -1,32 +1,11 @@
 let score = 0;
-let timeLeft = 180;
+let timeLeft = 10;
 let gameActive = true;
 const gameArea = document.getElementById('game-area');
 const scoreDisplay = document.getElementById('score');
 const timerDisplay = document.getElementById('timer');
 
-//倒计时
-function startTimer() {
-    updateTimer(); // 立即更新显示
-    
-    const timer = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-        
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            console.log("时间到！");
-        }
-    }, 1000);
-}
 
-function updateTimer() {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-}
-
-startTimer();
 
 
 // 生成大鹅
@@ -88,5 +67,5 @@ setTimeout(createGoose, i * 300);
 function endGame() {
     gameActive = false;
     localStorage.setItem('gooseGameScore', score);
-    window.location.href = 'change2.html'; // 跳转到昵称设置页面
+    window.location.href = 'final.html'; // 跳转到昵称设置页面
 }

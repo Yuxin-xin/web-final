@@ -10,7 +10,6 @@
        background: #ffffff;
        min-height: 100vh;
     }
-    /*导航*/
     #header {
      position: absolute;
         top: 0;
@@ -95,15 +94,21 @@
         background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: 10px;
     }
 
     .messages p{
         width: 100%;
         text-align: left;
-        margin-bottom: 10px;
+        color: #000;
+        margin-bottom: 20px;
+        font-size: 40px;
+    }
+    .highlight-score {
         padding: 10px;
-        font-size: 20px;
+        font-size: 2em;      
+        background-image: linear-gradient(135deg, #0024c5 0%, #e3d1f6 100%);
+       -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     #submitBtn {
         position: absolute;

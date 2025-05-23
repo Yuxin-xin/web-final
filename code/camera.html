@@ -1,24 +1,408 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full Screen Camera</title>
-    <link rel="stylesheet" href="camera.css">
+    <title>Pose Detection Goose Catcher</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        .container { 
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        .goose {
+            position: absolute;
+            width: 80px;   
+            height: 80px;  
+            background-image: url('asset/goose1.gif');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+            user-select: none;
+            pointer-events: none;
+            transition: transform 0.2s ease;
+        }
+        .score-display {
+            color: rgb(0, 0, 0);
+            padding: 10px;
+        }
+        #error-msg {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            background: rgba(255,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        #game-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .ui {
+        position: absolute;
+        top: 30px;
+        left: 20px;
+        font-size: 24px;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 10px 40px;
+        border-radius: 10px;
+        z-index: 100; /* 确保UI在背景之上 */
+        }
+        #timer {
+            color: rgb(0, 0, 0);
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div class="camera-container">
-        <video id="video" autoplay playsinline muted></video>
-        <!-- Apples will be dynamically inserted here -->
-        <div class="controls">
-            <button id="fullscreen-btn">FullScreen</button>
+    <div class="container">
+        <video id="video" playsinline></video>
+        <canvas id="canvas"></canvas>
+       
+        <div id="error-msg"></div>
+        <div id="game-area">
+            <div class="ui">
+                <div class="score-display">Score: 0</div>
+                <div id="timer">03:00</div>
+            </div>
         </div>
-        <div id="error-msg" class="error-message"></div>
     </div>
-    <script src="camera.js"></script>
-    <!-- 先引入 tfjs-core（本地或 CDN） -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-<!-- 再引入本地 pose-detection 文件 -->
-    <script src="/js/tf-models/pose-detection.js"></script>
+
+    <!-- Load TensorFlow and Pose Detection -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.6"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.querySelector('.score-display');
+            const errorMsg = document.getElementById('error-msg');
+            const timerDisplay = document.getElementById('timer');
+            
+            const activeGeese = new Set();
+            let detector = null;
+            let score = 0;
+            let animationFrameId = null;
+            let timeLeft = 180;
+            let gameActive = true;
+            let gooseInterval = null;
+
+            // Initialize camera and pose detection
+            async function init() {
+                try {
+                    // Setup camera
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            facingMode: 'user'
+                        },
+                        audio: false
+                    });
+                    
+                    video.srcObject = stream;
+                    
+                    await new Promise((resolve) => {
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            resolve();
+                        };
+                    });
+                    
+                    // Set canvas dimensions
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    // Load pose detection model
+                    detector = await poseDetection.createDetector(
+                        poseDetection.SupportedModels.MoveNet,
+                        {
+                            modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+                            enableSmoothing: true
+                        }
+                    );
+                    
+                    // Start game
+                    startTimer();
+                    startgooseGeneration();
+                    detectPoses();
+                    
+                } catch (err) {
+                    console.error('Initialization error:', err);
+                    errorMsg.textContent = `Error: ${err.message || 'Failed to initialize'}`;
+                    errorMsg.style.display = 'block';
+                }
+            }
+
+            // Countdown timer
+            function startTimer() {
+                updateTimer(); // Update immediately
+                
+                const timer = setInterval(() => {
+                    if (!gameActive) {
+                        clearInterval(timer);
+                        return;
+                    }
+                    
+                    timeLeft--;
+                    updateTimer();
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        console.log("Time's up!");
+                        endGame();
+                    }
+                }, 1000);
+            }
+
+            function updateTimer() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            // Pose detection loop
+            async function detectPoses() {
+                if (!detector || !gameActive) return;
+                
+                try {
+                    const poses = await detector.estimatePoses(video);
+                    drawPoses(poses);
+                    
+                    // Check for goose collisions
+                    if (poses.length > 0) {
+                        checkGooseCollisions(poses[0]);
+                    }
+                    
+                    animationFrameId = requestAnimationFrame(detectPoses);
+                } catch (err) {
+                    console.error('Pose detection error:', err);
+                }
+            }
+
+            // Draw only keypoints 9 (left wrist) and 10 (right wrist)
+            function drawPoses(poses) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Flip the canvas to match video mirroring
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.translate(-canvas.width, 0);
+                
+                // Draw video frame
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                if (poses && poses.length > 0) {
+                    const pose = poses[0];
+                    
+                    // Draw only keypoints 9 and 10
+                    if (pose.keypoints) {
+                        // Keypoint 9 - Left wrist
+                        if (pose.keypoints[9] && pose.keypoints[9].score > 0.3) {
+                            drawKeypoint(pose.keypoints[9], 'red');
+                        }
+                        // Keypoint 10 - Right wrist
+                        if (pose.keypoints[10] && pose.keypoints[10].score > 0.3) {
+                            drawKeypoint(pose.keypoints[10], 'blue');
+                        }
+                    }
+                }
+                
+                ctx.restore();
+            }
+
+            function drawKeypoint(keypoint, color) {
+                const radius = 8;  // Slightly larger for better visibility
+                ctx.beginPath();
+                ctx.arc(keypoint.x, keypoint.y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                
+                // Add white border for better visibility
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            }
+
+            // goose game functions
+            function checkGooseCollisions(pose) {
+                const leftHand = pose.keypoints[9];  // Left wrist
+                const rightHand = pose.keypoints[10]; // Right wrist
+                
+                if (!leftHand || !rightHand) return;
+
+                activeGeese.forEach(goose => {
+                    // Skip if already being collected
+                    if (goose.collecting) return;
+                    
+                    const gooseRect = goose.element.getBoundingClientRect();
+                    const gooseCenter = {
+                        x: gooseRect.left + gooseRect.width / 2,
+                        y: gooseRect.top + gooseRect.height / 2
+                    };
+
+                    // Convert hand positions to screen coordinates
+                    const leftHandScreen = {
+                        x: (1 - leftHand.x / canvas.width) * window.innerWidth,
+                        y: (leftHand.y / canvas.height) * window.innerHeight
+                    };
+                    
+                    const rightHandScreen = {
+                        x: (1 - rightHand.x / canvas.width) * window.innerWidth,
+                        y: (rightHand.y / canvas.height) * window.innerHeight
+                    };
+
+                    const threshold = 50;
+                    const leftDist = distance(leftHandScreen, gooseCenter);
+                    const rightDist = distance(rightHandScreen, gooseCenter);
+
+                    if (leftDist < threshold || rightDist < threshold) {
+                        goose.collecting = true; // Mark as being collected
+                        collectgoose(goose);
+                    }
+                });
+            }
+
+            function distance(point1, point2) {
+                return Math.sqrt(
+                    Math.pow(point1.x - point2.x, 2) + 
+                    Math.pow(point1.y - point2.y, 2)
+                );
+            }
+
+            function collectgoose(goose) {
+                clearInterval(goose.interval);
+                goose.element.style.transform = 'scale(0)';
+                
+                setTimeout(() => {
+                    goose.element.remove();
+                    activeGeese.delete(goose);
+                    updateScore(1); // Always add exactly 1 point
+                }, 200);
+            }
+
+            function updateScore(points) {
+                score += points;
+                scoreElement.textContent = `Score: ${score}`;
+            }
+
+            function clearAllGeese() {
+                activeGeese.forEach(goose => {
+                    clearInterval(goose.interval);
+                    goose.element.remove();
+                });
+                activeGeese.clear();
+            }
+
+            function startgooseGeneration() {
+                // Create initial gooses
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(creategoose, i * 300);
+                }
+                
+                // Continuous goose generation
+                gooseInterval = setInterval(() => {
+                    if (activeGeese.size < 5 && gameActive) {
+                        creategoose();
+                    }
+                }, 2000);
+            }
+
+            function creategoose() {
+                const goose = document.createElement('div');
+                goose.className = 'goose';
+                
+                document.body.appendChild(goose);
+                
+                // Position at top with random X
+                let posX = Math.random() * (window.innerWidth - 80);
+                let posY = -80;
+                
+                // Physics variables
+                let velocityY = Math.random() * 2 + 2;
+                const velocityX = (Math.random() - 0.5) * 2;
+                const gravity = 0.1;
+                
+                goose.style.left = posX + 'px';
+                goose.style.top = posY + 'px';
+                
+                const gooseData = {
+                    element: goose,
+                    collecting: false,
+                    interval: setInterval(() => {
+                        if (!gameActive) {
+                            clearInterval(gooseData.interval);
+                            return;
+                        }
+                        
+                        velocityY += gravity;
+                        posX += velocityX;
+                        posY += velocityY;
+                        
+                        goose.style.left = posX + 'px';
+                        goose.style.top = posY + 'px';
+                        
+                        // Remove when out of bounds
+                        if (posY > window.innerHeight + 80 || 
+                            posX < -80 || 
+                            posX > window.innerWidth + 80) {
+                            clearInterval(gooseData.interval);
+                            goose.remove();
+                            activeGeese.delete(gooseData);
+                        }
+                    }, 20)
+                };
+                
+                activeGeese.add(gooseData);
+            }
+
+            function endGame() {
+                gameActive = false;
+                clearInterval(gooseInterval);
+                cancelAnimationFrame(animationFrameId);
+                
+                // Store the score and redirect
+                localStorage.setItem('cameraScore', score);
+                window.location.href = 'final.html'; // Redirect to next game
+            }
+
+            // Cleanup on exit
+            window.addEventListener('beforeunload', () => {
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+                cancelAnimationFrame(animationFrameId);
+            });
+
+            // Initialize the game
+            await init();
+        });
+    </script>
 </body>
 </html>
